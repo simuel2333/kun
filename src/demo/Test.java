@@ -37,6 +37,7 @@ public class Test {
 //		dir = "right";
 //		path.add(dir);
 //		System.out.println(path);
+		System.out.println(true ^ true);
 	}
 
 	public static void sortR(List<Rank> rr) {

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Map {
+public class GameMap {
 
 	private int width;
 	private int height;
@@ -18,7 +18,7 @@ public class Map {
 
 	public MapElement[][] scene;
 
-	public Map(int width, int height) {
+	public GameMap(int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.scene = new MapElement[width][height];
@@ -30,7 +30,7 @@ public class Map {
 	}
 	
 	public void clear() {
-//		this.powers.clear();
+		this.powers.clear();
 		this.players.clear();
 	}
 

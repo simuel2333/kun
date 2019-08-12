@@ -2,7 +2,7 @@ package agent;
 
 import java.util.Queue;
 
-import map.Map;
+import map.GameMap;
 import map.Player;
 
 /**
@@ -18,7 +18,7 @@ public class AgentAction {
 		this.player = this.agentBrain.player;
 	}
 	
-	public void setPlayerMoves(Map map) {
+	public void setPlayerMoves(GameMap map) {
 		Queue<String> moves = this.agentBrain.findNearestPath(map);
 		this.player.moves = moves;
 	}

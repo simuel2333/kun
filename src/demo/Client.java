@@ -2,13 +2,14 @@ package demo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
-import agent.AgentAction;
 import agent.AgentBrain;
 import agent.AgentPerception;
 import cmd.Action;
 import cmd.RoundAction;
-import map.Map;
+import map.GameMap;
 import map.Meteor;
 import map.Player;
 import map.Power;
@@ -29,19 +30,15 @@ public class Client {
 	public Team enemy = null;
 	private int roundId = 0;
 	private String mode = null;
-	private int moveIdx = 0;
-	private List<String> moves = new ArrayList<String>();
 	private List<Player> players = new ArrayList<Player>();
-	private Map map;
+	private GameMap map;
 	public int vision;
+	public Map<Integer, Queue<String>> moveMap;
+
 
 	public Client(int team_id, String team_name) {
 		this.team_id = team_id;
 		this.team_name = team_name;
-		moves.add("up");
-		moves.add("right");
-		moves.add("down");
-		moves.add("left");
 	}
 
 	public void legStart(JSONObject data) {
@@ -52,7 +49,7 @@ public class Client {
 		int height = mapData.getInt("height");
 		this.vision = mapData.getInt("vision");
 		System.out.printf("map width:%d, map height %d, map vision %d\n", width, height, vision);
-		this.map = new Map(width, height);
+		this.map = new GameMap(width, height);
 
 		try {
 			JSONArray meteorArray = mapData.getJSONArray("meteor");
@@ -226,16 +223,10 @@ public class Client {
 		for (Player player : this.players) {
 			AgentPerception agentPerception = new AgentPerception(player);
 			AgentBrain agentBrain = new AgentBrain(agentPerception);
-			AgentAction agentAction = new AgentAction(agentBrain);
-			agentAction.setPlayerMoves(map);
-			String to = "";
-			try {
-				to = player.moves.peek();
-			} catch (Exception e) {
-
-			}
-			if (to == "") {
-				to = this.randomStep(player);
+			String to = agentBrain.findPowerNextMove(this.map);
+			if(to == "") {
+				//ÕÒºÚ¶´
+				to = agentBrain.findWormholeNextMove(map);
 			}
 			actions.add(new Action(player.getTeam(), player.getId(), to));
 		}
@@ -244,33 +235,6 @@ public class Client {
 		return roundAction;
 	}
 
-	public String randomStep(Player player) {
 
-		int x;
-		int y;
-		String dir = "";
-		do {
-			int r = (int) (Math.random() * 4);
-			dir = this.moves.get(r);
-			x = player.x;
-			y = player.y;
-			switch (dir) {
-			case "up":
-				y--;
-				break;
-			case "down":
-				y++;
-				break;
-			case "left":
-				x--;
-				break;
-			case "right":
-				x++;
-			}
-//			System.err.println(player.getId() + " " + dir + " ,(" + x + "," + y + ")"+"height:"+this.map.getHeight());
-		} while (x < 0 || y < 0 || x >= this.map.getWidth() || y >= this.map.getHeight());
-
-		return dir;
-	}
 
 }
