@@ -10,4 +10,8 @@ public class Meteor extends MapElement{
 		System.out.printf("meteor x %d, y %d\n", this.x, this.y);
 		
 	}
+	
+	public String toString() {
+		return "‘… Ø£∫(" + this.x + "," + this.y + ")";
+	}
 }

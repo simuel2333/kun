@@ -4,7 +4,7 @@ import net.sf.json.JSONObject;
 
 public class Tunnel extends MapElement{
 
-	private String direction;
+	public String direction;
 	public Tunnel(JSONObject object) {
 		this.x = object.getInt("x");
 		this.y = object.getInt("y");
@@ -12,5 +12,5 @@ public class Tunnel extends MapElement{
 		System.out.printf("tunnel x %d, y %d, direction %s\n", this.x, this.y, this.direction);
 		
 	}
-
+	
 }

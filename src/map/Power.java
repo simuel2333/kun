@@ -15,7 +15,7 @@ public class Power extends MapElement {
 	}
 
 	public String toString() {
-		return "(" + this.x + "," + this.y + ") point:" + this.point;
+		return "power:(" + this.x + "," + this.y + ") point:" + this.point;
 	}
 
 }

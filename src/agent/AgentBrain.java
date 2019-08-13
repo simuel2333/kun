@@ -1,9 +1,9 @@
 package agent;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Stack;
 
 import demo.Constant;
 import map.GameMap;
@@ -11,6 +11,7 @@ import map.MapElement;
 import map.Meteor;
 import map.Player;
 import map.Power;
+import map.Tunnel;
 import map.Wormhole;
 
 /**
@@ -176,61 +177,129 @@ public class AgentBrain {
 	}
 
 	public Queue<String> findPathByAStart(GameMap map, MapElement target) {
+		map.clearPrevisou();
 		Queue<String> path = new LinkedList<String>();
+		Stack<String> stack = new Stack<String>();
 		List<MapElement> open = new LinkedList<MapElement>();
 		List<MapElement> closed = new LinkedList<MapElement>();
 		MapElement originalSquare = this.player;
+		originalSquare.G = 0;
+		originalSquare.H = this.calcDistance(originalSquare, target);
 		open.add(originalSquare);
 		do {
 			MapElement currentSquare = this.getTheLowestFSquare(open);
 			closed.add(currentSquare);
 			open.remove(currentSquare);
-			if(closed.contains(target)) {
-				//PATH FOUND
+			if (closed.contains(target)) {
+				if(target instanceof Wormhole && (target.x==6 || target.x == 13)){
+					System.err.println(target);
+				}
+				// PATH FOUND
+				while(target.previous != null) {
+					if(target.previous.y + 1 == target.y) { //previous 在 target的上方
+						stack.push(Constant.DOWN);
+					} else if(target.previous.y - 1 == target.y) {
+						stack.push(Constant.UP);
+					} else if(target.previous.x + 1 == target.x) {
+						stack.push(Constant.RIGHT);
+					} else {
+						stack.push(Constant.LEFT);
+					}
+					target = target.previous;
+				}
+				while(!stack.isEmpty()) {
+					path.offer(stack.pop());
+				}
 				break;
 			}
-			List<MapElement> adjacentSquares = this.walkableAdjacentSquares(map, currentSquare);
+			List<MapElement> adjacentSquares = this.walkableAdjacentSquares(map, currentSquare, target);
 
-//			foreach (aSquare in adjacentSquares) {
-//		 
-//				if ([closedList contains:aSquare]) { // if this adjacent square is already in the closed list ignore it
-//					continue; // Go to the next adjacent square
-//				}
-//		 
-//				if (![openList contains:aSquare]) { // if its not in the open list
-//		 
-//					// compute its score, set the parent
-//					[openList add:aSquare]; // and add it to the open list
-//		 
-//				} else { // if its already in the open list
-//		 
-//					// test if using the current G score make the aSquare F score lower, if yes update the parent because it means its a better path
-//		 
-//				}
+			for (MapElement square : adjacentSquares) {
+				if (closed.contains(square))
+					continue;
+				if (!open.contains(square)) {
+					this.computeScore(square, currentSquare, target);
+					square.previous = currentSquare;
+					open.add(square);
+				} else {
+					int currentG = currentSquare.G + 1;
+					if((currentG + square.H) < square.getF()) {
+						square.G = currentG;
+						square.previous = currentSquare;
+					}
+				}
+			}
 
-		
 		} while (open.size() > 0);
 		return path;
 	}
-	
-	public List<MapElement> walkableAdjacentSquares(GameMap map,MapElement currentSquare) {
+
+	public List<MapElement> walkableAdjacentSquares(GameMap map, MapElement currentSquare, MapElement target) {
 		List<MapElement> adjacentSquares = new LinkedList<MapElement>();
-		//等待施工
+		int x = currentSquare.x;
+		int y = currentSquare.y;
+		// 上
+		if (y != 0 && !(map.scene[x][y - 1] instanceof Meteor)) {
+			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x][y - 1], target));
+		}
+		// 下
+		if (y != map.getHeight() - 1 && !(map.scene[x][y + 1] instanceof Meteor)) {
+			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x][y + 1], target));
+		}
+		// 左
+		if (x != 0 && !(map.scene[x - 1][y] instanceof Meteor)) {
+			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x - 1][y], target));
+		}
+		// 右
+		if (x != map.getWidth() - 1 && !(map.scene[x + 1][y] instanceof Meteor)) {
+			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x + 1][y], target));
+		}
+
 		return adjacentSquares;
 	}
-	
+
+	/**
+	 * 寻找真正的邻居方块，并设置GH值
+	 * 
+	 * @param map
+	 * @param currentSquare
+	 * @param square
+	 * @param target
+	 * @return
+	 */
+	private MapElement findTureAdjacentSquare(GameMap map, MapElement currentSquare, MapElement square,
+			MapElement target) {
+		MapElement tureAdjacentSquare = square;
+		if (square instanceof Tunnel) {
+			tureAdjacentSquare = map.getExportFromTunnel((Tunnel) square);
+		}
+
+		return tureAdjacentSquare;
+	}
+
+	private void computeScore(MapElement square, MapElement currentSquare, MapElement target) {
+		square.G = currentSquare.G + 1;
+		square.H = this.calcDistance(square, target);
+	}
+
+	public int calcDistance(MapElement m1, MapElement m2) {
+		return Math.abs(m1.x - m2.x) + Math.abs(m1.y - m2.y);
+	}
+
 	/**
 	 * 找到open中F值最小的Square
+	 * 
 	 * @param open
 	 * @return
 	 */
 	private MapElement getTheLowestFSquare(List<MapElement> open) {
-		if(open.size() == 1) {
+		if (open.size() == 1) {
 			return open.get(0);
 		} else {
-			MapElement lowest = open.get(open.size()-1);
-			for(int i=open.size()-2; i>=0; i--) {
-				if(lowest.getF() > open.get(i).getF()) lowest = open.get(i);
+			MapElement lowest = open.get(open.size() - 1);
+			for (int i = open.size() - 2; i >= 0; i--) {
+				if (lowest.getF() > open.get(i).getF())
+					lowest = open.get(i);
 			}
 			return lowest;
 		}

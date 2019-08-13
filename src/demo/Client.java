@@ -1,6 +1,7 @@
 package demo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -10,6 +11,7 @@ import agent.AgentPerception;
 import cmd.Action;
 import cmd.RoundAction;
 import map.GameMap;
+import map.MapElement;
 import map.Meteor;
 import map.Player;
 import map.Power;
@@ -20,7 +22,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * @author admin
+ * @author hc
  *
  */
 public class Client {
@@ -33,7 +35,8 @@ public class Client {
 	private List<Player> players = new ArrayList<Player>();
 	private GameMap map;
 	public int vision;
-	public Map<Integer, Queue<String>> moveMap;
+	public Map<Integer, Queue<String>> moveMap = new HashMap<Integer, Queue<String>>();
+	public Map<Integer, String> playerStatus = new HashMap<Integer, String>();
 
 
 	public Client(int team_id, String team_name) {
@@ -150,13 +153,18 @@ public class Client {
 			for (int i = 0; i < players.size(); i++) {
 				JSONObject object = players.getJSONObject(i);
 				Player player = new Player(object);
-
 				player.setForce(this.getPlayForce(player));
 				if (player.getTeam() == this.team_id) {
+					this.playerStatus.put(Integer.valueOf(player.getId()), Constant.ACTIVE);
 					this.players.add(player);
 				}
 				this.map.players.add(player);
 			}
+			//Çå³ýpath
+			for(Integer id : this.playerStatus.keySet()) {
+				if(this.playerStatus.get(id) == Constant.SLEEP) this.moveMap.put(id, null);
+			}
+			
 		} catch (Exception e) {
 			System.out.printf("donot get round players");
 		}
@@ -209,7 +217,7 @@ public class Client {
 	}
 
 	public boolean isAnvantage() {
-		if (this.self.getForce() == this.mode) {
+		if (this.self.getForce().equals(this.mode)) {
 			return true;
 		} else {
 			return false;
@@ -219,15 +227,23 @@ public class Client {
 	public RoundAction act() {
 
 		List<Action> actions = new ArrayList<Action>();
-//		int idx = getIdx();
 		for (Player player : this.players) {
-			AgentPerception agentPerception = new AgentPerception(player);
-			AgentBrain agentBrain = new AgentBrain(agentPerception);
-			String to = agentBrain.findPowerNextMove(this.map);
-			if(to == "") {
-				//ÕÒºÚ¶´
-				to = agentBrain.findWormholeNextMove(map);
+			
+			Integer playerId = Integer.valueOf(player.getId());
+			if(this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
+				AgentPerception agentPerception = new AgentPerception(player);
+				AgentBrain agentBrain = new AgentBrain(agentPerception);
+				MapElement target = agentPerception.findMaxPointPower(map);
+				if(target == null) {
+					target = agentPerception.findNearestWormhole(map);
+				}
+				Queue<String> path = agentBrain.findPathByAStart(map, target);
+				this.moveMap.put(playerId, path);
+//				System.err.println(this.roundId+","+target+",path:"+path);
 			}
+//			System.err.println("roundId:"+this.roundId+",playerId:"+playerId+", "+this.moveMap.get(playerId));
+			String to = this.moveMap.get(playerId).poll();
+			this.playerStatus.put(playerId, Constant.SLEEP);
 			actions.add(new Action(player.getTeam(), player.getId(), to));
 		}
 

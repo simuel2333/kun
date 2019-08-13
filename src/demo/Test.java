@@ -1,14 +1,11 @@
 package demo;
 
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import map.MapElement;
-import map.Power;
-import map.Tunnel;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Test {
 	static MapElement[][] a = new MapElement[2][2];
@@ -28,8 +25,8 @@ public class Test {
 //			mp[i] = power;
 //		}
 //		System.out.println(mp[0] instanceof Tunnel);
-		int r = (int) (Math.random() * 4);
-		System.out.println(r);
+//		int r = (int) (Math.random() * 4);
+//		System.out.println(r);
 		
 //		String dir = "left";
 //		List<String> path = new ArrayList<String>();
@@ -37,7 +34,26 @@ public class Test {
 //		dir = "right";
 //		path.add(dir);
 //		System.out.println(path);
-		System.out.println(true ^ true);
+//		System.out.println(true ^ true);
+//		int[] arr = {1,2,3,4};
+//		String[] str = new String[4];
+//		try {
+//			System.out.println(str[3]);
+//		} catch (ArrayIndexOutOfBoundsException e) {
+//			// TODO: handle exception
+//		}
+		
+		
+//		Father f = new Father();
+//		Father c = new Child();
+//		System.out.println(f instanceof Child);
+//		System.out.println(c instanceof Father);
+//		Map<Integer, String> map = new HashMap<Integer, String>();
+//		map.put(Integer.valueOf(1), "hahahah");
+//		map.put(Integer.valueOf(2), "22222");
+//		Integer id =Integer.valueOf(3);
+//		System.out.println(map.get(id));
+		System.out.println(Constant.UP == "up");
 	}
 
 	public static void sortR(List<Rank> rr) {
@@ -64,4 +80,12 @@ class Rank {
 	public String toString() {
 		return this.x + "";
 	}
+}
+
+class Father{
+	
+}
+
+class Child extends Father{
+	
 }
