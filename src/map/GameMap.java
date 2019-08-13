@@ -58,7 +58,7 @@ public class GameMap {
 		for (Wormhole w : this.wormholes) {
 			this.scene[w.x][w.y] = w;
 		}
-		this.tunnelExport();
+//		this.tunnelExport();
 	}
 
 	public void UpdateDynamicScene() {
