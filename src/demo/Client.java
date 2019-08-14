@@ -157,12 +157,14 @@ public class Client {
 				if (player.getTeam() == this.team_id) {
 					this.playerStatus.put(Integer.valueOf(player.getId()), Constant.ACTIVE);
 					this.players.add(player);
+				} else {
+					this.map.enemies.add(player);
 				}
 				this.map.players.add(player);
 			}
 			//Çå³ýpath
 			for(Integer id : this.playerStatus.keySet()) {
-				if(this.playerStatus.get(id) == Constant.SLEEP) this.moveMap.put(id, null);
+				if(this.playerStatus.get(id).equals(Constant.SLEEP)) this.moveMap.put(id, null);
 			}
 			
 		} catch (Exception e) {
@@ -230,18 +232,30 @@ public class Client {
 		for (Player player : this.players) {
 			
 			Integer playerId = Integer.valueOf(player.getId());
+			
 			if(this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
 				AgentPerception agentPerception = new AgentPerception(player);
 				AgentBrain agentBrain = new AgentBrain(agentPerception);
-				MapElement target = agentPerception.findMaxPointPower(map);
+				MapElement target = agentPerception.findMaxPointPower(this.map);
 				if(target == null) {
-					target = agentPerception.findNearestWormhole(map);
+					target = agentPerception.findNearestWormhole(this.map);
 				}
-				Queue<String> path = agentBrain.findPathByAStart(map, target);
+				Queue<String> path = agentBrain.findPathByAStart(this.map, target);
+				if(path.isEmpty()) {
+					path.offer(agentBrain.randomStep(map));
+//					System.err.println(this.roundId+",target:"+target+", player:"+player+",path:"+path);
+				}
 				this.moveMap.put(playerId, path);
 //				System.err.println(this.roundId+","+target+",path:"+path);
 			}
 //			System.err.println("roundId:"+this.roundId+",playerId:"+playerId+", "+this.moveMap.get(playerId));
+			if(this.isAnvantage()) {
+				
+			} else {
+				AgentPerception agentPerception = new AgentPerception(player);
+				AgentBrain agentBrain = new AgentBrain(agentPerception);
+				agentBrain.avoidEnemy(map, this.moveMap.get(playerId));
+			}
 			String to = this.moveMap.get(playerId).poll();
 			this.playerStatus.put(playerId, Constant.SLEEP);
 			actions.add(new Action(player.getTeam(), player.getId(), to));

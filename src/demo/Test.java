@@ -44,16 +44,16 @@ public class Test {
 //		}
 		
 		
-//		Father f = new Father();
-//		Father c = new Child();
-//		System.out.println(f instanceof Child);
-//		System.out.println(c instanceof Father);
 //		Map<Integer, String> map = new HashMap<Integer, String>();
 //		map.put(Integer.valueOf(1), "hahahah");
 //		map.put(Integer.valueOf(2), "22222");
 //		Integer id =Integer.valueOf(3);
 //		System.out.println(map.get(id));
-		System.out.println(Constant.UP == "up");
+//		System.out.println(Constant.UP == new String("up"));
+		
+		Child c = new Child();
+		Father c1 = c;
+		System.out.println(c==c1);
 	}
 
 	public static void sortR(List<Rank> rr) {

@@ -15,8 +15,9 @@ public class GameMap {
 	public List<Tunnel> tunnels;
 	public List<Wormhole> wormholes;
 	public List<Power> powers;
-	public List<Player> players;
+	public List<Player> players; //À˘”√player
 	public int roundId;
+	public List<Player> enemies;
 
 	public MapElement[][] scene;
 
@@ -29,6 +30,7 @@ public class GameMap {
 		this.wormholes = new ArrayList<Wormhole>();
 		this.powers = new LinkedList<Power>();
 		this.players = new ArrayList<Player>();
+		this.enemies = new ArrayList<Player>();
 	}
 
 	private void initScene() {
@@ -41,8 +43,23 @@ public class GameMap {
 	}
 
 	public void clear() {
+		this.enemies.clear();
+		this.clearScenePower();
 		this.powers.clear();
+		this.clearScenePlayer();
 		this.players.clear();
+	}
+	
+	public void clearScenePlayer() {
+		for(Player player : this.players) {
+			this.scene[player.x][player.y] = new MapElement(player.x, player.y); 
+		}
+	}
+	
+	public void clearScenePower() {
+		for(Power power : this.powers) {
+			this.scene[power.x][power.y] = new MapElement(power.x, power.y); 
+		}
 	}
 
 	public void UpdataStaticScene() {
@@ -58,11 +75,14 @@ public class GameMap {
 		for (Wormhole w : this.wormholes) {
 			this.scene[w.x][w.y] = w;
 		}
-//		this.tunnelExport();
+		this.setTunnelExport();
 	}
 
 	public void UpdateDynamicScene() {
-
+		// Wormhole
+		for (Wormhole w : this.wormholes) {
+			this.scene[w.x][w.y] = w;
+		}
 		// Power
 		for (Power p : this.powers) {
 			this.scene[p.x][p.y] = p;
@@ -71,9 +91,9 @@ public class GameMap {
 		for (Player p : this.players) {
 			this.scene[p.x][p.y] = p;
 		}
-		
+
 	}
-	
+
 	public void clearPrevisou() {
 		for (int i = 0; i < this.width; i++) {
 			for (int j = 0; j < this.height; j++) {
@@ -81,19 +101,19 @@ public class GameMap {
 			}
 		}
 	}
-	
-	public void tunnelExport() {
+
+	private void setTunnelExport() {
 		for (int i = 0; i < this.width; i++) {
 			for (int j = 0; j < this.height; j++) {
 				MapElement m = this.scene[i][j];
-				if(m instanceof Tunnel) {
-					System.err.println("in:"+m+",out:"+this.getExportFromTunnel((Tunnel) m));
+				if (m instanceof Tunnel) {
+					((Tunnel) m).export = this.getExportFromTunnel((Tunnel) m);
 				}
 			}
 		}
 	}
 
-	public MapElement getExportFromTunnel(Tunnel t) {
+	private MapElement getExportFromTunnel(Tunnel t) {
 		MapElement export = t;
 		while (export instanceof Tunnel) {
 			export = this.getNextByTunnel((Tunnel) export);
@@ -101,8 +121,16 @@ public class GameMap {
 		return export;
 	}
 
-	public MapElement getNextByTunnel(Tunnel t) {
-		if (t.direction.equals(Constant.UP) ) {
+	public boolean isOutOfMap(int x, int y) {
+		if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private MapElement getNextByTunnel(Tunnel t) {
+		if (t.direction.equals(Constant.UP)) {
 			return this.scene[t.x][t.y - 1];
 		} else if (t.direction.equals(Constant.DOWN)) {
 			return this.scene[t.x][t.y + 1];

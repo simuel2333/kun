@@ -1,5 +1,6 @@
 package agent;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -121,20 +122,16 @@ public class AgentBrain {
 			dir = moves[ran];
 			x = this.player.x;
 			y = this.player.y;
-			switch (dir) {
-			case Constant.UP:
+			if (dir.equals(Constant.UP) ) {
 				y--;
-				break;
-			case Constant.DOWN:
+			} else if (dir.equals(Constant.DOWN)) {
 				y++;
-				break;
-			case Constant.LEFT:
+			} else if (dir.equals(Constant.LEFT)) {
 				x--;
-				break;
-			case Constant.RIGHT:
+			} else {
 				x++;
 			}
-		} while (x < 0 || y < 0 || x >= map.getWidth() || y >= map.getHeight());
+		} while (map.isOutOfMap(x, y) || map.scene[x][y] instanceof Meteor);
 		return dir;
 	}
 
@@ -155,23 +152,18 @@ public class AgentBrain {
 		boolean isBlocked = false;
 		int x = this.player.x;
 		int y = this.player.y;
-		switch (move) {
-		case Constant.RIGHT:
-			if (map.scene[x + 1][y] instanceof Meteor)
-				isBlocked = true;
-			break;
-		case Constant.LEFT:
-			if (map.scene[x - 1][y] instanceof Meteor)
-				isBlocked = true;
-			break;
-		case Constant.UP:
+		if (move.equals(Constant.UP) ) {
 			if (map.scene[x][y - 1] instanceof Meteor)
 				isBlocked = true;
-			break;
-		case Constant.DOWN:
+		} else if (move.equals(Constant.DOWN)) {
 			if (map.scene[x][y + 1] instanceof Meteor)
 				isBlocked = true;
-			break;
+		} else if (move.equals(Constant.LEFT)) {
+			if (map.scene[x - 1][y] instanceof Meteor)
+				isBlocked = true;
+		} else {
+			if (map.scene[x + 1][y] instanceof Meteor)
+				isBlocked = true;
 		}
 		return isBlocked;
 	}
@@ -188,19 +180,28 @@ public class AgentBrain {
 		open.add(originalSquare);
 		do {
 			MapElement currentSquare = this.getTheLowestFSquare(open);
+//			if(target instanceof Wormhole && open.contains(target)) {
+//				System.err.println(map.roundId+",playerId:"+this.player+","+"target:"+target+" open:"+open);
+//				System.err.println("---最小F---："+currentSquare.getF()+";target的F:"+target.getF());
+//				System.err.println(currentSquare);
+//			}
 			closed.add(currentSquare);
 			open.remove(currentSquare);
 			if (closed.contains(target)) {
-				if(target instanceof Wormhole && (target.x==6 || target.x == 13)){
-					System.err.println(target);
-				}
 				// PATH FOUND
 				while(target.previous != null) {
-					if(target.previous.y + 1 == target.y) { //previous 在 target的上方
+					MapElement previous = target.previous;
+					if(target.previous instanceof Tunnel) {
+						previous = ((Tunnel)target.previous).export;
+					}
+					if(target.previous instanceof Wormhole) {
+						previous = ((Wormhole) target.previous).bro;
+					}
+					if(previous.y + 1 == target.y) { //previous 在 target的上方
 						stack.push(Constant.DOWN);
-					} else if(target.previous.y - 1 == target.y) {
+					} else if(previous.y - 1 == target.y) {
 						stack.push(Constant.UP);
-					} else if(target.previous.x + 1 == target.x) {
+					} else if(previous.x + 1 == target.x) {
 						stack.push(Constant.RIGHT);
 					} else {
 						stack.push(Constant.LEFT);
@@ -212,7 +213,7 @@ public class AgentBrain {
 				}
 				break;
 			}
-			List<MapElement> adjacentSquares = this.walkableAdjacentSquares(map, currentSquare, target);
+			List<MapElement> adjacentSquares = this.walkableAdjacentSquares(map, currentSquare);
 
 			for (MapElement square : adjacentSquares) {
 				if (closed.contains(square))
@@ -234,52 +235,71 @@ public class AgentBrain {
 		return path;
 	}
 
-	public List<MapElement> walkableAdjacentSquares(GameMap map, MapElement currentSquare, MapElement target) {
+	public List<MapElement> walkableAdjacentSquares(GameMap map, MapElement currentSquare) {
 		List<MapElement> adjacentSquares = new LinkedList<MapElement>();
 		int x = currentSquare.x;
 		int y = currentSquare.y;
+		if(currentSquare instanceof Tunnel) {
+			x = ((Tunnel) currentSquare).export.x;
+			y = ((Tunnel) currentSquare).export.y;
+		}
+		if(currentSquare instanceof Wormhole) {
+			x = ((Wormhole) currentSquare).bro.x;
+			y = ((Wormhole) currentSquare).bro.y;
+		}
 		// 上
 		if (y != 0 && !(map.scene[x][y - 1] instanceof Meteor)) {
-			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x][y - 1], target));
+			MapElement tas = map.scene[x][y - 1];
+			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+				adjacentSquares.add(tas);
+			} else if(!(tas instanceof Tunnel)) {
+				adjacentSquares.add(tas);
+			}
 		}
 		// 下
 		if (y != map.getHeight() - 1 && !(map.scene[x][y + 1] instanceof Meteor)) {
-			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x][y + 1], target));
+			MapElement tas = map.scene[x][y + 1];
+			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+				adjacentSquares.add(tas);
+			} else if(!(tas instanceof Tunnel)) {
+				adjacentSquares.add(tas);
+			}
 		}
 		// 左
 		if (x != 0 && !(map.scene[x - 1][y] instanceof Meteor)) {
-			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x - 1][y], target));
+			MapElement tas = map.scene[x - 1][y];
+			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+				adjacentSquares.add(tas);
+			} else if(!(tas instanceof Tunnel)) {
+				adjacentSquares.add(tas);
+			}
 		}
 		// 右
 		if (x != map.getWidth() - 1 && !(map.scene[x + 1][y] instanceof Meteor)) {
-			adjacentSquares.add(this.findTureAdjacentSquare(map, currentSquare, map.scene[x + 1][y], target));
+			MapElement tas = map.scene[x + 1][y];
+			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+				adjacentSquares.add(tas);
+			} else if(!(tas instanceof Tunnel)) {
+				adjacentSquares.add(tas);
+			}
 		}
 
 		return adjacentSquares;
 	}
 
-	/**
-	 * 寻找真正的邻居方块，并设置GH值
-	 * 
-	 * @param map
-	 * @param currentSquare
-	 * @param square
-	 * @param target
-	 * @return
-	 */
-	private MapElement findTureAdjacentSquare(GameMap map, MapElement currentSquare, MapElement square,
-			MapElement target) {
-		MapElement tureAdjacentSquare = square;
-		if (square instanceof Tunnel) {
-			tureAdjacentSquare = map.getExportFromTunnel((Tunnel) square);
-		}
-
-		return tureAdjacentSquare;
-	}
-
 	private void computeScore(MapElement square, MapElement currentSquare, MapElement target) {
 		square.G = currentSquare.G + 1;
-		square.H = this.calcDistance(square, target);
+		if(square instanceof Tunnel) {
+			square.H = this.calcDistance(((Tunnel) square).export, target);
+		} else if(square instanceof Wormhole) {
+			if(square == target) {
+				square.H = 0;
+			} else {
+				square.H = this.calcDistance(((Wormhole) square).bro, target);
+			}
+		} else {
+			square.H = this.calcDistance(square, target);
+		}
 	}
 
 	public int calcDistance(MapElement m1, MapElement m2) {
@@ -302,6 +322,47 @@ public class AgentBrain {
 					lowest = open.get(i);
 			}
 			return lowest;
+		}
+	}
+	
+	public void avoidEnemy(GameMap map, Queue<String> path) {
+		List<Player> enemies = this.perception.findNearestEnemies(map);
+		if(enemies.isEmpty()) {
+			return;
+		} else if( this.perception.calcDistance(enemies.get(0), this.player) < 3) { //需要躲避
+			List<MapElement> adjenct_player = this.walkableAdjacentSquares(map, this.player);
+			List<MapElement> adjenct_enemies = new LinkedList<MapElement>();
+			for(Player enemy : enemies) {
+				if(adjenct_enemies.isEmpty()) {
+					adjenct_enemies = this.walkableAdjacentSquares(map, enemy);
+				} else {
+					List<MapElement> temp = this.walkableAdjacentSquares(map, enemy);
+					for(MapElement square : temp) {
+						if(!adjenct_enemies.contains(square)) adjenct_enemies.add(square);
+					}
+				}
+			}
+			for(MapElement square: adjenct_enemies) {
+				if(adjenct_player.contains(square)) adjenct_player.remove(square);
+			}
+			if(adjenct_player.size()>0) {
+				List<String> moves = new ArrayList<String>();
+				for(MapElement square : adjenct_player) {
+					if((this.player.y - 1) == square.y) {
+						moves.add(Constant.UP);
+					} else if((this.player.y + 1) == square.y) {
+						moves.add(Constant.DOWN);
+					} else if((this.player.x - 1) == square.y) {
+						moves.add(Constant.LEFT);
+					} else {
+						moves.add(Constant.RIGHT);
+					}
+				}
+				//===============================先随机
+				String dir = this.randomStepByMoves(map, moves.toArray(new String[moves.size()]));
+				path.clear();
+				path.offer(dir);
+			}
 		}
 	}
 }

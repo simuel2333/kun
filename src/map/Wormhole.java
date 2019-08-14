@@ -20,7 +20,7 @@ public class Wormhole extends MapElement {
 	}
 
 	public String toString() {
-		return "ºÚ¶´:(" + this.x + "," + this.y + ")";
+		return "ºÚ¶´:(" + this.x + "," + this.y + ")" + " F:"+ this.getF();
 	}
 
 }

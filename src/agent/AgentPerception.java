@@ -87,8 +87,6 @@ public class AgentPerception {
 	 * 根据当前坐标寻找最近能量
 	 */
 	public List<Power> findNearestPowers(GameMap map) {
-//		int vision = map.getVision();
-		// 作弊
 		int x = -1;
 		int y = -1;
 		List<Power> np = new ArrayList<Power>();
@@ -99,9 +97,6 @@ public class AgentPerception {
 			f2: for (int j = 0; j < count; j++) {
 				x = this.player.x - i + (j % (i * 2 + 1));
 				y = this.player.y - i + (j / (i * 2 + 1));
-//				if(map.roundId == 0 && this.player.getId() == 4) {
-//					System.err.println("player:"+"("+this.player.x+","+this.player.y+"); pointer:("+x+","+y+")");
-//				}
 				if (x < 0 || y < 0 || x >= map.getWidth() || y >= map.getWidth()) {
 					continue f2;
 				}
@@ -114,7 +109,6 @@ public class AgentPerception {
 			if (np.size() > 0)
 				break f1;
 		}
-//		System.err.println("roundId:" + map.roundId + ",playerId:" + this.player.getId() + ",power" + np);
 
 		return np;
 	}
@@ -133,4 +127,28 @@ public class AgentPerception {
 		}
 		return maxPower;
 	}
+	
+	public List<Player> findNearestEnemies(GameMap map) {
+		List<Player> nearestEnemies = new ArrayList<Player>();
+		if(map.enemies.isEmpty()) return nearestEnemies;
+		Player nearestEnemy = null;
+		for(Player enemy : map.enemies) {
+			if(nearestEnemy == null) {
+				nearestEnemy = enemy;
+			} else {
+				if(this.calcDistance(this.player, nearestEnemy) > this.calcDistance(this.player, enemy)) {
+					nearestEnemy = enemy;
+				}
+			}
+		}
+		nearestEnemies.add(nearestEnemy);
+		for(Player enemy : map.enemies) {
+			if(this.calcDistance(this.player, nearestEnemy) == this.calcDistance(this.player, enemy)) {
+				if(enemy != nearestEnemy) nearestEnemies.add(enemy);
+			}
+
+		}
+		return nearestEnemies;
+	}
+	
 }

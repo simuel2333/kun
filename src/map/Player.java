@@ -47,6 +47,18 @@ public class Player extends MapElement {
 	public void setSleep(int sleep) {
 		this.sleep = sleep;
 	}
+	
+	public String toString() {
+		return "id:"+this.id +",("+this.x+","+this.y+")" + " F:"+ this.getF();
+	}
+	
+	public boolean isEnemy(Player player) {
+		if(player.team != this.team) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 
 }

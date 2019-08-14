@@ -31,6 +31,6 @@ public class MapElement implements Comparable<MapElement> {
 	}
 
 	public String toString() {
-		return "(" + this.x + "," + this.y + ")";
+		return "(" + this.x + "," + this.y + ")" + " F:"+ this.getF();
 	}
 }
