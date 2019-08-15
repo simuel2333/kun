@@ -30,7 +30,7 @@ public class Client {
 	private String team_name = "";
 	public Team self = null;
 	public Team enemy = null;
-	private int roundId = 0;
+	public int roundId = 0;
 	private String mode = null;
 	private List<Player> players = new ArrayList<Player>();
 	private GameMap map;

@@ -102,24 +102,17 @@ public class AgentPerception {
 		});
 		return map.powers.get(0);
 	}
-	
-	public List<Player> findNearestEnemies(GameMap map) {
+	/**
+	 * a找到距离为distance以内的所有敌军
+	 * @param map
+	 * @return
+	 */
+	public List<Player> findNearestEnemies(GameMap map, int distance) {
 		List<Player> nearestEnemies = new ArrayList<Player>();
 		if(map.enemies.isEmpty()) return nearestEnemies;
-		Player nearestEnemy = null;
 		for(Player enemy : map.enemies) {
-			if(nearestEnemy == null) {
-				nearestEnemy = enemy;
-			} else {
-				if(this.calcDistance(this.player, nearestEnemy) > this.calcDistance(this.player, enemy)) {
-					nearestEnemy = enemy;
-				}
-			}
-		}
-		nearestEnemies.add(nearestEnemy);
-		for(Player enemy : map.enemies) {
-			if(this.calcDistance(this.player, nearestEnemy) == this.calcDistance(this.player, enemy)) {
-				if(enemy != nearestEnemy) nearestEnemies.add(enemy);
+			if(this.calcDistance(this.player, enemy) <= distance) {
+				nearestEnemies.add(enemy);
 			}
 
 		}

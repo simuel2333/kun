@@ -122,7 +122,7 @@ public class AgentBrain {
 			dir = moves[ran];
 			x = this.player.x;
 			y = this.player.y;
-			if (dir.equals(Constant.UP) ) {
+			if (dir.equals(Constant.UP)) {
 				y--;
 			} else if (dir.equals(Constant.DOWN)) {
 				y++;
@@ -152,7 +152,7 @@ public class AgentBrain {
 		boolean isBlocked = false;
 		int x = this.player.x;
 		int y = this.player.y;
-		if (move.equals(Constant.UP) ) {
+		if (move.equals(Constant.UP)) {
 			if (map.scene[x][y - 1] instanceof Meteor)
 				isBlocked = true;
 		} else if (move.equals(Constant.DOWN)) {
@@ -189,26 +189,26 @@ public class AgentBrain {
 			open.remove(currentSquare);
 			if (closed.contains(target)) {
 				// PATH FOUND
-				while(target.previous != null) {
+				while (target.previous != null) {
 					MapElement previous = target.previous;
-					if(target.previous instanceof Tunnel) {
-						previous = ((Tunnel)target.previous).export;
+					if (target.previous instanceof Tunnel) {
+						previous = ((Tunnel) target.previous).export;
 					}
-					if(target.previous instanceof Wormhole) {
+					if (target.previous instanceof Wormhole) {
 						previous = ((Wormhole) target.previous).bro;
 					}
-					if(previous.y + 1 == target.y) { //previous 在 target的上方
+					if (previous.y + 1 == target.y) { // previous 在 target的上方
 						stack.push(Constant.DOWN);
-					} else if(previous.y - 1 == target.y) {
+					} else if (previous.y - 1 == target.y) {
 						stack.push(Constant.UP);
-					} else if(previous.x + 1 == target.x) {
+					} else if (previous.x + 1 == target.x) {
 						stack.push(Constant.RIGHT);
 					} else {
 						stack.push(Constant.LEFT);
 					}
 					target = target.previous;
 				}
-				while(!stack.isEmpty()) {
+				while (!stack.isEmpty()) {
 					path.offer(stack.pop());
 				}
 				break;
@@ -224,7 +224,7 @@ public class AgentBrain {
 					open.add(square);
 				} else {
 					int currentG = currentSquare.G + 1;
-					if((currentG + square.H) < square.getF()) {
+					if ((currentG + square.H) < square.getF()) {
 						square.G = currentG;
 						square.previous = currentSquare;
 					}
@@ -239,47 +239,47 @@ public class AgentBrain {
 		List<MapElement> adjacentSquares = new LinkedList<MapElement>();
 		int x = currentSquare.x;
 		int y = currentSquare.y;
-		if(currentSquare instanceof Tunnel) {
+		if (currentSquare instanceof Tunnel) {
 			x = ((Tunnel) currentSquare).export.x;
 			y = ((Tunnel) currentSquare).export.y;
 		}
-		if(currentSquare instanceof Wormhole) {
+		if (currentSquare instanceof Wormhole) {
 			x = ((Wormhole) currentSquare).bro.x;
 			y = ((Wormhole) currentSquare).bro.y;
 		}
 		// 上
 		if (y != 0 && !(map.scene[x][y - 1] instanceof Meteor)) {
 			MapElement tas = map.scene[x][y - 1];
-			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+			if (tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
 				adjacentSquares.add(tas);
-			} else if(!(tas instanceof Tunnel)) {
+			} else if (!(tas instanceof Tunnel)) {
 				adjacentSquares.add(tas);
 			}
 		}
 		// 下
 		if (y != map.getHeight() - 1 && !(map.scene[x][y + 1] instanceof Meteor)) {
 			MapElement tas = map.scene[x][y + 1];
-			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+			if (tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
 				adjacentSquares.add(tas);
-			} else if(!(tas instanceof Tunnel)) {
+			} else if (!(tas instanceof Tunnel)) {
 				adjacentSquares.add(tas);
 			}
 		}
 		// 左
 		if (x != 0 && !(map.scene[x - 1][y] instanceof Meteor)) {
 			MapElement tas = map.scene[x - 1][y];
-			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+			if (tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
 				adjacentSquares.add(tas);
-			} else if(!(tas instanceof Tunnel)) {
+			} else if (!(tas instanceof Tunnel)) {
 				adjacentSquares.add(tas);
 			}
 		}
 		// 右
 		if (x != map.getWidth() - 1 && !(map.scene[x + 1][y] instanceof Meteor)) {
 			MapElement tas = map.scene[x + 1][y];
-			if(tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
+			if (tas instanceof Tunnel && map.scene[x][y] != ((Tunnel) tas).export) {
 				adjacentSquares.add(tas);
-			} else if(!(tas instanceof Tunnel)) {
+			} else if (!(tas instanceof Tunnel)) {
 				adjacentSquares.add(tas);
 			}
 		}
@@ -289,10 +289,10 @@ public class AgentBrain {
 
 	private void computeScore(MapElement square, MapElement currentSquare, MapElement target) {
 		square.G = currentSquare.G + 1;
-		if(square instanceof Tunnel) {
+		if (square instanceof Tunnel) {
 			square.H = this.calcDistance(((Tunnel) square).export, target);
-		} else if(square instanceof Wormhole) {
-			if(square == target) {
+		} else if (square instanceof Wormhole) {
+			if (square == target) {
 				square.H = 0;
 			} else {
 				square.H = this.calcDistance(((Wormhole) square).bro, target);
@@ -324,45 +324,100 @@ public class AgentBrain {
 			return lowest;
 		}
 	}
-	
+
 	public void avoidEnemy(GameMap map, Queue<String> path) {
-		List<Player> enemies = this.perception.findNearestEnemies(map);
-		if(enemies.isEmpty()) {
+		int avoid_distance = 3;
+		List<Player> enemies = this.perception.findNearestEnemies(map, avoid_distance);
+		if (enemies.isEmpty()) {
 			return;
-		} else if( this.perception.calcDistance(enemies.get(0), this.player) < 3) { //需要躲避
+		} else if (enemies.size() > 0) { // 需要躲避
 			List<MapElement> adjenct_player = this.walkableAdjacentSquares(map, this.player);
 			List<MapElement> adjenct_enemies = new LinkedList<MapElement>();
-			for(Player enemy : enemies) {
-				if(adjenct_enemies.isEmpty()) {
+			for (Player enemy : enemies) {
+				if (adjenct_enemies.isEmpty()) {
 					adjenct_enemies = this.walkableAdjacentSquares(map, enemy);
 				} else {
 					List<MapElement> temp = this.walkableAdjacentSquares(map, enemy);
-					for(MapElement square : temp) {
-						if(!adjenct_enemies.contains(square)) adjenct_enemies.add(square);
+					for (MapElement square : temp) {
+						if (!adjenct_enemies.contains(square))
+							adjenct_enemies.add(square);
 					}
 				}
 			}
-			for(MapElement square: adjenct_enemies) {
-				if(adjenct_player.contains(square)) adjenct_player.remove(square);
+			for (MapElement square : adjenct_enemies) {
+				if (adjenct_player.contains(square))
+					adjenct_player.remove(square);
 			}
-			if(adjenct_player.size()>0) {
+			if (adjenct_player.size() > 0) {
 				List<String> moves = new ArrayList<String>();
-				for(MapElement square : adjenct_player) {
-					if((this.player.y - 1) == square.y) {
+				for (MapElement square : adjenct_player) {
+					if ((this.player.y - 1) == square.y) {
 						moves.add(Constant.UP);
-					} else if((this.player.y + 1) == square.y) {
+					} else if ((this.player.y + 1) == square.y) {
 						moves.add(Constant.DOWN);
-					} else if((this.player.x - 1) == square.y) {
+					} else if ((this.player.x - 1) == square.y) {
 						moves.add(Constant.LEFT);
 					} else {
 						moves.add(Constant.RIGHT);
 					}
 				}
-				//===============================先随机
-				String dir = this.randomStepByMoves(map, moves.toArray(new String[moves.size()]));
+				String dir = this.findBestAvoidWay(map, enemies, moves);
 				path.clear();
 				path.offer(dir);
 			}
 		}
+	}
+
+	/**
+	 * 1从moves中选择一个方向前进
+	 * 
+	 * @param map
+	 * @param enemies
+	 * @param moves
+	 * @return
+	 */
+	public String findBestAvoidWay(GameMap map, List<Player> enemies, List<String> moves) {
+		String dir = "";
+		if (moves.isEmpty()) {
+			dir = this.randomStep(map);
+		} else if (moves.size() == 1) {
+			dir = moves.get(0);
+		} else {
+			int maxValue = 0;
+			for (String move : moves) {
+				if(dir.equals("")) {
+					dir = move;
+					maxValue = this.awayValue(enemies, dir);
+				} else {
+					if(maxValue < this.awayValue(enemies, move)) dir = move;
+				}
+			}
+		}
+		return dir;
+	}
+
+	/**
+	 * 沿着dir方向原理敌人的值
+	 * 
+	 * @param enemies
+	 * @param dir
+	 * @return
+	 */
+	private int awayValue(List<Player> enemies, String dir) {
+		int value = 0;
+		MapElement tmp = new MapElement(this.player.x, this.player.y);
+		if (dir.equals(Constant.UP)) {
+			tmp.y--;
+		} else if (dir.equals(Constant.DOWN)) {
+			tmp.y++;
+		} else if (dir.equals(Constant.LEFT)) {
+			tmp.x--;
+		} else {
+			tmp.x++;
+		}
+		for (Player enemy : enemies) {
+			value += this.calcDistance(enemy, tmp);
+		}
+		return value;
 	}
 }

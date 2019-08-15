@@ -10,16 +10,16 @@ import net.sf.json.JSONObject;
 
 public class Demo {
 	public static void main(String args[]) throws IOException {
-//		int team_id = Integer.parseInt(args[0]);
-//	    String ip = args[1];
-//	    int port = Integer.parseInt(args[2]);
-//	    Proxy p = new Proxy(ip, port);
+		int team_id = Integer.parseInt(args[0]);
+	    String ip = args[1];
+	    int port = Integer.parseInt(args[2]);
+	    Proxy p = new Proxy(ip, port);
 		
-		System.err.println("Start!");
-		Proxy p = new Proxy("127.0.0.1", 6001);
-		int team_id = 998;
-		String path = "C:\\Users\\simuel\\Desktop\\log.txt";
-		System.setOut(new PrintStream(path));
+//		System.err.println("Start!");
+//		Proxy p = new Proxy("127.0.0.1", 6001);
+//		int team_id = 998;
+//		String path = "C:\\Users\\simuel\\Desktop\\log.txt";
+//		System.setOut(new PrintStream(path));
 	
 
 		p.connect();
@@ -56,6 +56,7 @@ public class Demo {
 				client.legEnd(json.getJSONObject("msg_data"));
 				enemy_score += client.enemy.score.getPoint();
 				self_score += client.self.score.getPoint();
+				System.err.println(client.roundId+1);
 			} else if (msg_name.equals("game_over")) {
 				System.out.println("game_over");
 				System.err.println("game_over");
