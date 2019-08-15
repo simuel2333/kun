@@ -1,6 +1,7 @@
 package agent;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import demo.Client;
@@ -83,49 +84,23 @@ public class AgentPerception {
 		return Math.abs(m1.x - m2.x) + Math.abs(m1.y - m2.y);
 	}
 
-	/**
-	 * 根据当前坐标寻找最近能量
-	 */
-	public List<Power> findNearestPowers(GameMap map) {
-		int x = -1;
-		int y = -1;
-		List<Power> np = new ArrayList<Power>();
-		// 寻找最近的能量
-		// 看+1~+vision距离内是否有能量
-		f1: for (int i = 1; i <= map.getHeight(); i++) {
-			int count = (2 * i + 1) * (2 * i + 1);
-			f2: for (int j = 0; j < count; j++) {
-				x = this.player.x - i + (j % (i * 2 + 1));
-				y = this.player.y - i + (j / (i * 2 + 1));
-				if (x < 0 || y < 0 || x >= map.getWidth() || y >= map.getWidth()) {
-					continue f2;
-				}
-
-				if (map.scene[x][y] instanceof Power) {
-					np.add((Power) map.scene[x][y]);
-				}
-			}
-
-			if (np.size() > 0)
-				break f1;
-		}
-
-		return np;
-	}
 
 	public Power findMaxPointPower(GameMap map) {
-		List<Power> np = this.findNearestPowers(map);
-		if (np.size() == 0)
-			return null;
-		Power maxPower = null;
-		for (Power power : np) {
-			if (maxPower == null) {
-				maxPower = power;
-			} else if (maxPower.point < power.point) {
-				maxPower = power;
+		if(map.powers.isEmpty()) return null;
+		AgentPerception ap = this;
+		map.powers.sort(new Comparator<Power>() {
+
+			@Override
+			public int compare(Power p1, Power p2) {
+				if(ap.calcDistance(ap.player, p1) != ap.calcDistance(ap.player, p2)) { 
+					return ap.calcDistance(ap.player, p1) - ap.calcDistance(ap.player, p2);
+				} else {
+					return p2.point - p1.point;
+				}
 			}
-		}
-		return maxPower;
+			
+		});
+		return map.powers.get(0);
 	}
 	
 	public List<Player> findNearestEnemies(GameMap map) {

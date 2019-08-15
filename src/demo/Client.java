@@ -233,9 +233,9 @@ public class Client {
 			
 			Integer playerId = Integer.valueOf(player.getId());
 			
+			AgentPerception agentPerception = new AgentPerception(player);
+			AgentBrain agentBrain = new AgentBrain(agentPerception);
 			if(this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
-				AgentPerception agentPerception = new AgentPerception(player);
-				AgentBrain agentBrain = new AgentBrain(agentPerception);
 				MapElement target = agentPerception.findMaxPointPower(this.map);
 				if(target == null) {
 					target = agentPerception.findNearestWormhole(this.map);
@@ -252,8 +252,6 @@ public class Client {
 			if(this.isAnvantage()) {
 				
 			} else {
-				AgentPerception agentPerception = new AgentPerception(player);
-				AgentBrain agentBrain = new AgentBrain(agentPerception);
 				agentBrain.avoidEnemy(map, this.moveMap.get(playerId));
 			}
 			String to = this.moveMap.get(playerId).poll();
