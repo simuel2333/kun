@@ -10,16 +10,16 @@ import net.sf.json.JSONObject;
 
 public class Demo {
 	public static void main(String args[]) throws IOException {
-//		int team_id = Integer.parseInt(args[0]);
-//	    String ip = args[1];
-//	    int port = Integer.parseInt(args[2]);
-//	    Proxy p = new Proxy(ip, port);
+		int team_id = Integer.parseInt(args[0]);
+	    String ip = args[1];
+	    int port = Integer.parseInt(args[2]);
+	    Proxy p = new Proxy(ip, port);
 		
-		System.err.println("Start!");
-		Proxy p = new Proxy("127.0.0.1", 6001);
-		int team_id = 998;
-		String path = "C:\\Users\\admin\\Desktop\\log.txt";
-		System.setOut(new PrintStream(path));
+//		System.err.println("Start!");
+//		Proxy p = new Proxy("127.0.0.1", 6001);
+//		int team_id = 998;
+//		String path = "C:\\Users\\simuel\\Desktop\\log.txt";
+//		System.setOut(new PrintStream(path));
 	
 
 		p.connect();
