@@ -249,9 +249,9 @@ public class Client {
 //				System.err.println(this.roundId+","+target+",path:"+path);
 			}
 //			System.err.println("roundId:"+this.roundId+",playerId:"+playerId+", "+this.moveMap.get(playerId));
-			if(this.isAnvantage()) {
+			if(this.isAnvantage()) { //优势
 				
-			} else {
+			} else { //劣势 不要重叠
 				agentBrain.avoidEnemy(map, this.moveMap.get(playerId));
 			}
 			String to = this.moveMap.get(playerId).poll();
