@@ -8,7 +8,7 @@ import net.sf.json.JSONObject;
 public class Player extends MapElement {
 	private int id;
 	private int team;
-	private int score;
+	public int score;
 	private int sleep;
 	private String force;
 	public Queue<String> moves = new LinkedList<String>();

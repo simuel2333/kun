@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 
+import demo.Client;
 import demo.Constant;
+import demo.Demo;
 import map.GameMap;
 import map.MapElement;
 import map.Meteor;
@@ -169,22 +171,21 @@ public class AgentBrain {
 	}
 
 	public Queue<String> findPathByAStart(GameMap map, MapElement target) {
+		return this.findPathByAStart(map, this.player, target);
+	}
+	
+	public Queue<String> findPathByAStart(GameMap map,Player player,MapElement target) {
 		map.clearPrevisou();
 		Queue<String> path = new LinkedList<String>();
 		Stack<String> stack = new Stack<String>();
 		List<MapElement> open = new LinkedList<MapElement>();
 		List<MapElement> closed = new LinkedList<MapElement>();
-		MapElement originalSquare = this.player;
+		MapElement originalSquare = player;
 		originalSquare.G = 0;
 		originalSquare.H = this.calcDistance(originalSquare, target);
 		open.add(originalSquare);
 		do {
 			MapElement currentSquare = this.getTheLowestFSquare(open);
-//			if(target instanceof Wormhole && open.contains(target)) {
-//				System.err.println(map.roundId+",playerId:"+this.player+","+"target:"+target+" open:"+open);
-//				System.err.println("---最小F---："+currentSquare.getF()+";target的F:"+target.getF());
-//				System.err.println(currentSquare);
-//			}
 			closed.add(currentSquare);
 			open.remove(currentSquare);
 			if (closed.contains(target)) {
@@ -232,6 +233,7 @@ public class AgentBrain {
 			}
 
 		} while (open.size() > 0);
+		long end = System.currentTimeMillis();
 		return path;
 	}
 
@@ -325,12 +327,22 @@ public class AgentBrain {
 		}
 	}
 
-	public void avoidEnemy(GameMap map, Queue<String> path) {
+	public void catchEnemy(GameMap map) {
+		Player maxScoreEnemy = this.perception.findMaxScoreEnemy(map);
+		//没发现敌人
+		if(maxScoreEnemy == null) return;
+		
+		Client client = Client.getInstance();
+		for(Player player : map.selfPlayers) {
+			client.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, player, maxScoreEnemy));
+		}
+	}
+
+	public Queue<String> avoidEnemy(GameMap map) {
+		Queue<String> path = new LinkedList<String>();
 		int avoid_distance = 3;
 		List<Player> enemies = this.perception.findNearestEnemies(map, avoid_distance);
-		if (enemies.isEmpty()) {
-			return;
-		} else if (enemies.size() > 0) { // 需要躲避
+		if (!enemies.isEmpty()) { // 需要躲避
 			List<MapElement> adjenct_player = this.walkableAdjacentSquares(map, this.player);
 			List<MapElement> adjenct_enemies = new LinkedList<MapElement>();
 			for (Player enemy : enemies) {
@@ -362,10 +374,10 @@ public class AgentBrain {
 					}
 				}
 				String dir = this.findBestAvoidWay(map, enemies, moves);
-				path.clear();
 				path.offer(dir);
 			}
 		}
+		return path;
 	}
 
 	/**
@@ -385,11 +397,12 @@ public class AgentBrain {
 		} else {
 			int maxValue = 0;
 			for (String move : moves) {
-				if(dir.equals("")) {
+				if (dir.equals("")) {
 					dir = move;
 					maxValue = this.awayValue(enemies, dir);
 				} else {
-					if(maxValue < this.awayValue(enemies, move)) dir = move;
+					if (maxValue < this.awayValue(enemies, move))
+						dir = move;
 				}
 			}
 		}

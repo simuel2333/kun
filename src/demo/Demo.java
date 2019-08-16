@@ -18,14 +18,15 @@ public class Demo {
 		System.err.println("Start!");
 		Proxy p = new Proxy("127.0.0.1", 6001);
 		int team_id = 998;
-		String path = "C:\\Users\\simuel\\Desktop\\log.txt";
+		String path = "C:\\Users\\admin\\Desktop\\log.txt";
 		System.setOut(new PrintStream(path));
 	
 
 		p.connect();
 		String team_name = "jinitaimei";
-		Client client = new Client(team_id, team_name);
-
+		Client client = Client.getInstance();
+		client.team_id = team_id;
+		client.team_name = team_name;
 		/* registration */
 		Registration r = new Registration(team_id, team_name);
 		Message m = new Message("registration", r);

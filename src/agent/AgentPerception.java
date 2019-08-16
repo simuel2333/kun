@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import demo.Client;
 import map.GameMap;
 import map.MapElement;
 import map.Player;
@@ -19,7 +18,6 @@ import map.Wormhole;
  */
 public class AgentPerception {
 	public Player player;
-	public Client client;
 
 	public AgentPerception(Player player) {
 		this.player = player;
@@ -30,10 +28,6 @@ public class AgentPerception {
 	 * 
 	 * @return
 	 */
-	public boolean isAnvantage() {
-		return this.client.isAnvantage();
-	}
-
 	public Wormhole findNearestWormhole(GameMap map) {
 		List<Wormhole> whs = map.wormholes;
 		Wormhole target = null;
@@ -155,6 +149,19 @@ public class AgentPerception {
 		} else {
 			return false;
 		}
+	}
+
+	public Player findMaxScoreEnemy(GameMap map) {
+		Player maxScorePalyer = null;
+		if(map.enemies.isEmpty()) return null;
+		for(Player enemy : map.enemies) {
+			if(maxScorePalyer == null) {
+				maxScorePalyer = enemy;
+			} else if(maxScorePalyer.score < enemy.score){
+				maxScorePalyer = enemy;
+			}
+		}
+		return maxScorePalyer;
 	}
 
 }

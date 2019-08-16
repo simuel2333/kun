@@ -26,8 +26,8 @@ import net.sf.json.JSONObject;
  *
  */
 public class Client {
-	private int team_id = 0;
-	private String team_name = "";
+	public int team_id = 0;
+	public String team_name = "";
 	public Team self = null;
 	public Team enemy = null;
 	public int roundId = 0;
@@ -38,10 +38,15 @@ public class Client {
 	public Map<Integer, Queue<String>> moveMap = new HashMap<Integer, Queue<String>>();
 	public Map<Integer, String> playerStatus = new HashMap<Integer, String>();
 
-
-	public Client(int team_id, String team_name) {
-		this.team_id = team_id;
-		this.team_name = team_name;
+	private Client() {
+	}
+	
+	public static Client getInstance() {
+		return StaticSingletonHolder.instance;
+	}
+	
+	private static class StaticSingletonHolder{
+		private static final Client instance = new Client(); 
 	}
 
 	public void legStart(JSONObject data) {
@@ -157,16 +162,18 @@ public class Client {
 				if (player.getTeam() == this.team_id) {
 					this.playerStatus.put(Integer.valueOf(player.getId()), Constant.ACTIVE);
 					this.players.add(player);
+					this.map.selfPlayers.add(player);
 				} else {
 					this.map.enemies.add(player);
 				}
 				this.map.players.add(player);
 			}
-			//清除path
-			for(Integer id : this.playerStatus.keySet()) {
-				if(this.playerStatus.get(id).equals(Constant.SLEEP)) this.moveMap.put(id, null);
+			// 清除path
+			for (Integer id : this.playerStatus.keySet()) {
+				if (this.playerStatus.get(id).equals(Constant.SLEEP))
+					this.moveMap.put(id, null);
 			}
-			
+
 		} catch (Exception e) {
 			System.out.printf("donot get round players");
 		}
@@ -230,18 +237,23 @@ public class Client {
 
 		List<Action> actions = new ArrayList<Action>();
 		for (Player player : this.players) {
-			
+
 			Integer playerId = Integer.valueOf(player.getId());
-			
+
 			AgentPerception agentPerception = new AgentPerception(player);
 			AgentBrain agentBrain = new AgentBrain(agentPerception);
-			if(this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
+			if (this.isAnvantage()) { // 优势
+				agentBrain.catchEnemy(map);
+			} else { // 劣势 
+				this.moveMap.put(playerId, agentBrain.avoidEnemy(map));
+			}
+			if (this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
 				MapElement target = agentPerception.findMaxPointPower(this.map);
-				if(target == null) {
+				if (target == null) {
 					target = agentPerception.findNearestWormhole(this.map);
 				}
 				Queue<String> path = agentBrain.findPathByAStart(this.map, target);
-				if(path.isEmpty()) {
+				if (path.isEmpty()) {
 					path.offer(agentBrain.randomStep(map));
 //					System.err.println(this.roundId+",target:"+target+", player:"+player+",path:"+path);
 				}
@@ -249,11 +261,6 @@ public class Client {
 //				System.err.println(this.roundId+","+target+",path:"+path);
 			}
 //			System.err.println("roundId:"+this.roundId+",playerId:"+playerId+", "+this.moveMap.get(playerId));
-			if(this.isAnvantage()) { //优势
-				
-			} else { //劣势 不要重叠
-				agentBrain.avoidEnemy(map, this.moveMap.get(playerId));
-			}
 			String to = this.moveMap.get(playerId).poll();
 			this.playerStatus.put(playerId, Constant.SLEEP);
 			actions.add(new Action(player.getTeam(), player.getId(), to));
@@ -262,7 +269,5 @@ public class Client {
 		RoundAction roundAction = new RoundAction(this.roundId, actions);
 		return roundAction;
 	}
-
-
 
 }

@@ -18,6 +18,7 @@ public class GameMap {
 	public List<Player> players; //À˘”√player
 	public int roundId;
 	public List<Player> enemies;
+	public List<Player> selfPlayers;
 
 	public MapElement[][] scene;
 
@@ -31,6 +32,7 @@ public class GameMap {
 		this.powers = new LinkedList<Power>();
 		this.players = new ArrayList<Player>();
 		this.enemies = new ArrayList<Player>();
+		this.selfPlayers = new ArrayList<Player>();
 	}
 
 	private void initScene() {
@@ -43,6 +45,7 @@ public class GameMap {
 	}
 
 	public void clear() {
+		this.selfPlayers.clear();
 		this.enemies.clear();
 		this.clearScenePower();
 		this.powers.clear();
