@@ -243,7 +243,7 @@ public class Client {
 			AgentPerception agentPerception = new AgentPerception(player);
 			AgentBrain agentBrain = new AgentBrain(agentPerception);
 			if (this.isAnvantage()) { // ”≈ ∆
-				agentBrain.catchEnemy(map);
+//				agentBrain.catchEnemy(map);
 			} else { // ¡” ∆ 
 				this.moveMap.put(playerId, agentBrain.avoidEnemy(map));
 			}

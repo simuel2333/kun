@@ -173,8 +173,8 @@ public class AgentBrain {
 	public Queue<String> findPathByAStart(GameMap map, MapElement target) {
 		return this.findPathByAStart(map, this.player, target);
 	}
-	
-	public Queue<String> findPathByAStart(GameMap map,Player player,MapElement target) {
+
+	public Queue<String> findPathByAStart(GameMap map, Player player, MapElement target) {
 		map.clearPrevisou();
 		Queue<String> path = new LinkedList<String>();
 		Stack<String> stack = new Stack<String>();
@@ -329,13 +329,17 @@ public class AgentBrain {
 
 	public void catchEnemy(GameMap map) {
 		Player maxScoreEnemy = this.perception.findMaxScoreEnemy(map);
-		//没发现敌人
-		if(maxScoreEnemy == null) return;
-		
+		// 没发现敌人
+		if (maxScoreEnemy == null)
+			return;
+
 		Client client = Client.getInstance();
-		for(Player player : map.selfPlayers) {
-			client.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, player, maxScoreEnemy));
+		List<MapElement> adjencents = this.walkableAdjacentSquares(map, maxScoreEnemy);
+		int minSize = adjencents.size() < map.selfPlayers.size() ? adjencents.size() : map.selfPlayers.size();
+		for (int i = 0; i < minSize; i++) {
+			client.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, map.selfPlayers.get(i), adjencents.get(i)));
 		}
+
 	}
 
 	public Queue<String> avoidEnemy(GameMap map) {

@@ -1,0 +1,80 @@
+[1mdiff --git a/src/agent/AgentBrain.java b/src/agent/AgentBrain.java[m
+[1mindex 0e755e3..78e446e 100644[m
+[1m--- a/src/agent/AgentBrain.java[m
+[1m+++ b/src/agent/AgentBrain.java[m
+[36m@@ -173,8 +173,8 @@[m [mpublic class AgentBrain {[m
+ 	public Queue<String> findPathByAStart(GameMap map, MapElement target) {[m
+ 		return this.findPathByAStart(map, this.player, target);[m
+ 	}[m
+[31m-	[m
+[31m-	public Queue<String> findPathByAStart(GameMap map,Player player,MapElement target) {[m
+[32m+[m[41m[m
+[32m+[m	[32mpublic Queue<String> findPathByAStart(GameMap map, Player player, MapElement target) {[m[41m[m
+ 		map.clearPrevisou();[m
+ 		Queue<String> path = new LinkedList<String>();[m
+ 		Stack<String> stack = new Stack<String>();[m
+[36m@@ -329,13 +329,17 @@[m [mpublic class AgentBrain {[m
+ [m
+ 	public void catchEnemy(GameMap map) {[m
+ 		Player maxScoreEnemy = this.perception.findMaxScoreEnemy(map);[m
+[31m-		//√ª∑¢œ÷µ–»À[m
+[31m-		if(maxScoreEnemy == null) return;[m
+[31m-		[m
+[32m+[m		[32m// √ª∑¢œ÷µ–»À[m[41m[m
+[32m+[m		[32mif (maxScoreEnemy == null)[m[41m[m
+[32m+[m			[32mreturn;[m[41m[m
+[32m+[m[41m[m
+ 		Client client = Client.getInstance();[m
+[31m-		for(Player player : map.selfPlayers) {[m
+[31m-			client.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, player, maxScoreEnemy));[m
+[32m+[m		[32mList<MapElement> adjencents = this.walkableAdjacentSquares(map, maxScoreEnemy);[m[41m[m
+[32m+[m		[32mint minSize = adjencents.size() < map.selfPlayers.size() ? adjencents.size() : map.selfPlayers.size();[m[41m[m
+[32m+[m		[32mfor (int i = 0; i < minSize; i++) {[m[41m[m
+[32m+[m			[32mclient.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, map.selfPlayers.get(i), adjencents.get(i)));[m[41m[m
+ 		}[m
+[32m+[m[41m[m
+ 	}[m
+ [m
+ 	public Queue<String> avoidEnemy(GameMap map) {[m
+[1mdiff --git a/src/agent/AgentPerception.java b/src/agent/AgentPerception.java[m
+[1mindex 7075d30..722e917 100644[m
+[1m--- a/src/agent/AgentPerception.java[m
+[1m+++ b/src/agent/AgentPerception.java[m
+[36m@@ -23,11 +23,6 @@[m [mpublic class AgentPerception {[m
+ 		this.player = player;[m
+ 	}[m
+ [m
+[31m-	/**[m
+[31m-	 * ≈–∂œº∫∑Ω «∑Ò¥¶”⁄”≈ ∆∂‘æ÷[m
+[31m-	 * [m
+[31m-	 * @return[m
+[31m-	 */[m
+ 	public Wormhole findNearestWormhole(GameMap map) {[m
+ 		List<Wormhole> whs = map.wormholes;[m
+ 		Wormhole target = null;[m
+[1mdiff --git a/src/demo/Client.java b/src/demo/Client.java[m
+[1mindex b2ce823..291ca9a 100644[m
+[1m--- a/src/demo/Client.java[m
+[1m+++ b/src/demo/Client.java[m
+[36m@@ -243,7 +243,7 @@[m [mpublic class Client {[m
+ 			AgentPerception agentPerception = new AgentPerception(player);[m
+ 			AgentBrain agentBrain = new AgentBrain(agentPerception);[m
+ 			if (this.isAnvantage()) { // ”≈ ∆[m
+[31m-				agentBrain.catchEnemy(map);[m
+[32m+[m[32m//				agentBrain.catchEnemy(map);[m[41m[m
+ 			} else { // ¡” ∆ [m
+ 				this.moveMap.put(playerId, agentBrain.avoidEnemy(map));[m
+ 			}[m
+[1mdiff --git a/src/demo/Demo.java b/src/demo/Demo.java[m
+[1mindex 3ce4f68..fe8cc97 100644[m
+[1m--- a/src/demo/Demo.java[m
+[1m+++ b/src/demo/Demo.java[m
+[36m@@ -18,7 +18,7 @@[m [mpublic class Demo {[m
+ 		System.err.println("Start!");[m
+ 		Proxy p = new Proxy("127.0.0.1", 6001);[m
+ 		int team_id = 998;[m
+[31m-		String path = "C:\\Users\\admin\\Desktop\\log.txt";[m
+[32m+[m		[32mString path = "C:\\Users\\simuel\\Desktop\\log.txt";[m[41m[m
+ 		System.setOut(new PrintStream(path));[m
+ 	[m
+ [m

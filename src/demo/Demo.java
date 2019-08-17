@@ -18,7 +18,7 @@ public class Demo {
 		System.err.println("Start!");
 		Proxy p = new Proxy("127.0.0.1", 6001);
 		int team_id = 998;
-		String path = "C:\\Users\\admin\\Desktop\\log.txt";
+		String path = "C:\\Users\\simuel\\Desktop\\log.txt";
 		System.setOut(new PrintStream(path));
 	
 
