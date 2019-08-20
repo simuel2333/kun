@@ -8,6 +8,7 @@ import java.util.Queue;
 
 import agent.AgentBrain;
 import agent.AgentPerception;
+import agent.State;
 import cmd.Action;
 import cmd.RoundAction;
 import map.GameMap;
@@ -33,9 +34,10 @@ public class Client {
 	public int roundId = 0;
 	private String mode = null;
 	private List<Player> players = new ArrayList<Player>();
-	private GameMap map;
+	public GameMap map;
 	public int vision;
 	public Map<Integer, Queue<String>> moveMap = new HashMap<Integer, Queue<String>>();
+	public Map<Integer, State> stateMap = new HashMap<Integer, State>();
 	public Map<Integer, String> playerStatus = new HashMap<Integer, String>();
 
 	private Client() {
@@ -163,6 +165,9 @@ public class Client {
 					this.playerStatus.put(Integer.valueOf(player.getId()), Constant.ACTIVE);
 					this.players.add(player);
 					this.map.selfPlayers.add(player);
+					if(this.roundId == 0) {
+						this.stateMap.put(Integer.valueOf(player.getId()), new State());
+					}
 				} else {
 					this.map.enemies.add(player);
 				}

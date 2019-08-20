@@ -337,6 +337,18 @@ public class AgentBrain {
 			client.moveMap.put(Integer.valueOf(player.getId()), this.findPathByAStart(map, player, maxScoreEnemy));
 		}
 	}
+	
+	public void eatPower() {
+		MapElement target = this.perception.findMaxPointPower(Client.getInstance().map);
+		if (target == null) {
+			target = this.perception.findNearestWormhole(Client.getInstance().map);
+		}
+		Queue<String> path = this.findPathByAStart(Client.getInstance().map, target);
+		if (path.isEmpty()) {
+			path.offer(this.randomStep(Client.getInstance().map));
+		}
+		Client.getInstance().moveMap.put(this.player.getId(), path);
+	}
 
 	public Queue<String> avoidEnemy(GameMap map) {
 		Queue<String> path = new LinkedList<String>();
