@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import agent.AgentAction;
 import agent.AgentBrain;
 import agent.AgentPerception;
 import agent.State;
@@ -247,30 +248,12 @@ public class Client {
 
 			AgentPerception agentPerception = new AgentPerception(player);
 			AgentBrain agentBrain = new AgentBrain(agentPerception);
-			if (this.isAnvantage()) { // ”≈ ∆
-				agentBrain.catchEnemy(map);
-			} else { // ¡” ∆ 
-				this.moveMap.put(playerId, agentBrain.avoidEnemy(map));
-			}
-			if (this.moveMap.get(playerId) == null || this.moveMap.get(playerId).isEmpty()) {
-				MapElement target = agentPerception.findMaxPointPower(this.map);
-				if (target == null) {
-					target = agentPerception.findNearestWormhole(this.map);
-				}
-				Queue<String> path = agentBrain.findPathByAStart(this.map, target);
-				if (path.isEmpty()) {
-					path.offer(agentBrain.randomStep(map));
-//					System.err.println(this.roundId+",target:"+target+", player:"+player+",path:"+path);
-				}
-				this.moveMap.put(playerId, path);
-//				System.err.println(this.roundId+","+target+",path:"+path);
-			}
-//			System.err.println("roundId:"+this.roundId+",playerId:"+playerId+", "+this.moveMap.get(playerId));
-			String to = this.moveMap.get(playerId).poll();
+			AgentAction	agentAction = new AgentAction(agentBrain);
+			Action action = agentAction.playerAction();
 			this.playerStatus.put(playerId, Constant.SLEEP);
-			actions.add(new Action(player.getTeam(), player.getId(), to));
+			actions.add(action);
 		}
-
+		System.err.println(this.roundId+" " + this.stateMap);
 		RoundAction roundAction = new RoundAction(this.roundId, actions);
 		return roundAction;
 	}

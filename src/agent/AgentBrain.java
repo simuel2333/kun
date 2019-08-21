@@ -349,6 +349,11 @@ public class AgentBrain {
 		}
 		Client.getInstance().moveMap.put(this.player.getId(), path);
 	}
+	
+	public void runAway() {
+		Queue<String> path = this.avoidEnemy(Client.getInstance().map);
+		Client.getInstance().moveMap.put(this.player.getId(), path);
+	}
 
 	public Queue<String> avoidEnemy(GameMap map) {
 		Queue<String> path = new LinkedList<String>();
@@ -373,23 +378,29 @@ public class AgentBrain {
 					adjenct_player.remove(square);
 			}
 			if (adjenct_player.size() > 0) {
-				List<String> moves = new ArrayList<String>();
 				for (MapElement square : adjenct_player) {
-					if ((this.player.y - 1) == square.y) {
-						moves.add(Constant.UP);
-					} else if ((this.player.y + 1) == square.y) {
-						moves.add(Constant.DOWN);
-					} else if ((this.player.x - 1) == square.y) {
-						moves.add(Constant.LEFT);
-					} else {
-						moves.add(Constant.RIGHT);
+					if(square instanceof Wormhole || square instanceof Tunnel) {
+						path.offer(this.getDirBySquare(square));
+						return path;
 					}
 				}
-				String dir = this.findBestAvoidWay(map, enemies, moves);
+				String dir = this.findBestAvoidWay(map, enemies, adjenct_player);
 				path.offer(dir);
 			}
 		}
 		return path;
+	}
+	
+	public String getDirBySquare(MapElement square) {
+		if ((this.player.y - 1) == square.y) {
+			return Constant.UP;
+		} else if ((this.player.y + 1) == square.y) {
+			return Constant.DOWN;
+		} else if ((this.player.x - 1) == square.y) {
+			return Constant.LEFT;
+		} else {
+			return Constant.RIGHT;
+		}
 	}
 
 	/**
@@ -400,49 +411,38 @@ public class AgentBrain {
 	 * @param moves
 	 * @return
 	 */
-	public String findBestAvoidWay(GameMap map, List<Player> enemies, List<String> moves) {
+	public String findBestAvoidWay(GameMap map, List<Player> enemies, List<MapElement> squares) {
 		String dir = "";
-		if (moves.isEmpty()) {
+		if (squares.isEmpty()) {
 			dir = this.randomStep(map);
-		} else if (moves.size() == 1) {
-			dir = moves.get(0);
+		} else if (squares.size() == 1) {
+			dir = this.getDirBySquare(squares.get(0));
 		} else {
 			int maxValue = 0;
-			for (String move : moves) {
-				if (dir.equals("")) {
-					dir = move;
-					maxValue = this.awayValue(enemies, dir);
+			MapElement target = null;
+			for (MapElement square : squares) {
+				if(target == null) {
+					target = square;
+					maxValue = this.awayValue(enemies, square);
 				} else {
-					if (maxValue < this.awayValue(enemies, move))
-						dir = move;
+					int tmp = this.awayValue(enemies, square);
+					if(maxValue < tmp) {
+						target = square;
+						maxValue = tmp;
+					}
 				}
 			}
+			dir = this.getDirBySquare(target);
 		}
 		return dir;
 	}
-
-	/**
-	 * 沿着dir方向原理敌人的值
-	 * 
-	 * @param enemies
-	 * @param dir
-	 * @return
-	 */
-	private int awayValue(List<Player> enemies, String dir) {
+	
+	public int awayValue(List<Player> enemies, MapElement square) {
 		int value = 0;
-		MapElement tmp = new MapElement(this.player.x, this.player.y);
-		if (dir.equals(Constant.UP)) {
-			tmp.y--;
-		} else if (dir.equals(Constant.DOWN)) {
-			tmp.y++;
-		} else if (dir.equals(Constant.LEFT)) {
-			tmp.x--;
-		} else {
-			tmp.x++;
-		}
-		for (Player enemy : enemies) {
-			value += this.calcDistance(enemy, tmp);
+		for(MapElement enemy : enemies) {
+			value += this.calcDistance(enemy, square);
 		}
 		return value;
 	}
+
 }

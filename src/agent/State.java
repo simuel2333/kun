@@ -22,4 +22,8 @@ public class State {
 		}
 	}
 	
+	public String toString() {
+		return "״̬:"+this.state+",״̬�仯:"+this.isChange();
+	}
+	
 }

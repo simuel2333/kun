@@ -42,7 +42,15 @@ public class AgentAction {
 				client.stateMap.get(playerId).setState(State.RUN_AWAY);
 			}
 		}
-		Action action = new Action(player.getTeam(), player.getId(), "");
+		if(client.moveMap.get(playerId) == null || client.moveMap.get(playerId).isEmpty() || client.stateMap.get(playerId).isChange()) {
+			if(client.stateMap.get(playerId).getState() == State.EAT_POWER) {
+				this.agentBrain.eatPower();
+			} else if(client.stateMap.get(playerId).getState() == State.RUN_AWAY) {
+				this.agentBrain.runAway();
+			}
+		}
+		String to = client.moveMap.get(playerId).poll();
+		Action action = new Action(player.getTeam(), player.getId(), to);
 		return action;
 	}
 	
