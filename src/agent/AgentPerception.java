@@ -23,11 +23,6 @@ public class AgentPerception {
 		this.player = player;
 	}
 
-	/**
-	 * 判断己方是否处于优势对局
-	 * 
-	 * @return
-	 */
 	public Wormhole findNearestWormhole(GameMap map) {
 		List<Wormhole> whs = map.wormholes;
 		Wormhole target = null;

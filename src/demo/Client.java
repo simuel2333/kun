@@ -248,6 +248,7 @@ public class Client {
 
 			AgentPerception agentPerception = new AgentPerception(player);
 			AgentBrain agentBrain = new AgentBrain(agentPerception);
+
 			AgentAction	agentAction = new AgentAction(agentBrain);
 			Action action = agentAction.playerAction();
 			this.playerStatus.put(playerId, Constant.SLEEP);
